@@ -34,7 +34,7 @@ The page always opens on today's two options.
 
 ## Weekly update (Saturday)
 
-This is automatic: the "Saturday dinner plan + grocery list" scheduled task (Saturdays 6:13 am Central) plans the week in the Claude Doc, then commits `data/plans/<next Sunday>.json` here after checking it with `node tools/check-plan.mjs`. To add or fix a week by hand:
+The "Saturday dinner plan + grocery list" scheduled task (Saturdays 4:59 am Central) plans the week in the Claude Doc and ends the new tab with an **App data** block: that block is the file below. Check it with `node tools/check-plan.mjs data/plans/<date>.json` before committing if you can. To add a week by hand:
 
 Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Create new file**, name it `data/plans/2026-11-22.json`, paste, commit. Old weeks can stay.
 
