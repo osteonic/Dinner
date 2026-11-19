@@ -1,0 +1,248 @@
+{
+ "week": "2026-11-15",
+ "label": "Nov 15–21",
+ "summary": "Sunday Nov 15 to Saturday Nov 21: every weekly rule passes except seafood in both options on two nights, which the Library's three seafood recipes can't cover without a repeat.",
+ "days": [
+  {
+   "day": "Sunday",
+   "a": {
+    "id": "gnocchi-with-sausage-and-garlicky-broccoli-rabe",
+    "name": "Gnocchi with Sausage and Garlicky Broccoli Rabe",
+    "time": "25 min"
+   },
+   "b": {
+    "id": "creamy-butternut-pasta-with-spicy-sausage-and-spinach",
+    "name": "Creamy Butternut Pasta with Spicy Sausage and Spinach",
+    "time": "45 min"
+   },
+   "protein": "Italian chicken sausage, 12 oz",
+   "prep": "Rabe and spinach keep only a few days, so this night goes first. Both make 5: dinner + 3 lunches."
+  },
+  {
+   "day": "Monday",
+   "a": {
+    "id": "caprese-portobello-pizzas",
+    "name": "Caprese Portobello Pizzas",
+    "time": "30 min"
+   },
+   "b": {
+    "id": "curry-roasted-vegetables-and-chickpeas-with-mint-cilantro-chutney",
+    "name": "Curry-Roasted Vegetables and Chickpeas with Mint-Cilantro Chutney",
+    "time": "40 min"
+   },
+   "protein": "None: meatless, canned beans in both",
+   "prep": "A is doubled to 8 caps = dinner + 2 lunches. If B, put the arugula and cherry tomatoes on Tuesday's platter."
+  },
+  {
+   "day": "Tuesday",
+   "a": {
+    "id": "weeknight-chicken-souvlaki",
+    "name": "Weeknight Chicken Souvlaki",
+    "time": "30 min"
+   },
+   "b": {
+    "id": "shawarma-spiced-grilled-chicken-thighs-with-tahini",
+    "name": "Shawarma-Spiced Grilled Chicken Thighs with Tahini",
+    "time": "1 h marinade + 20 min"
+   },
+   "protein": "Boneless skinless thighs, 1 1/4 lb",
+   "prep": "Freeze thighs by Sun Nov 15; thaw Mon night. B: marinate by 5 pm. A's 15-min stand sits inside its 30 min."
+  },
+  {
+   "day": "Wednesday",
+   "a": {
+    "id": "chicken-fajita-pasta",
+    "name": "Chicken Fajita Pasta",
+    "time": "35 min"
+   },
+   "b": {
+    "id": "ginger-lime-chicken-with-broccoli-and-carrots",
+    "name": "Ginger-Lime Chicken with Broccoli and Carrots",
+    "time": "45 min"
+   },
+   "protein": "Boneless skinless breast, 1 1/2 lb (3 × 8 oz)",
+   "prep": "Freeze by Sun Nov 15; thaw Tue night. A uses 1 lb: freeze the spare 1/2 lb."
+  },
+  {
+   "day": "Thursday",
+   "a": {
+    "id": "seafood-fried-brown-rice",
+    "name": "Seafood Fried Brown Rice",
+    "time": "15 min"
+   },
+   "b": {
+    "id": "garlic-turmeric-salmon-with-rainbow-carrots-cauliflower-and-lemon",
+    "name": "Garlic-Turmeric Salmon with Rainbow Carrots, Cauliflower, and Lemon",
+    "time": "40 min"
+   },
+   "protein": "None: shrimp + scallops (A), salmon (B)",
+   "prep": "Cook extra rice: A needs 3 cups cold brown rice (frozen, or cook Wed). Buy all seafood frozen; thaw only the one you'll cook Wed night, keep the other frozen for next week."
+  },
+  {
+   "day": "Friday",
+   "a": {
+    "id": "shrimp-quesadillas-with-stuffed-avocados",
+    "name": "Shrimp Quesadillas with Stuffed Avocados",
+    "time": "20 min"
+   },
+   "b": {
+    "id": "chicken-tortilla-soup",
+    "name": "Chicken Tortilla Soup",
+    "time": "50 min, pressure cooker"
+   },
+   "protein": "None: cooked shrimp (A), chicken breast 1 lb (B)",
+   "prep": "B's chicken: freeze by Sun Nov 15, thaw Thu night only if B. B makes 8: freeze 4. Buy avocados firm."
+  },
+  {
+   "day": "Saturday",
+   "a": {
+    "id": "carne-asada-fries",
+    "name": "Carne Asada Fries",
+    "time": "35 min"
+   },
+   "b": {
+    "id": "american-style-cheesy-beef-goulash-and-macaroni",
+    "name": "American-Style Cheesy Beef Goulash and Macaroni",
+    "time": "30 min, pressure cooker"
+   },
+   "protein": "Beef, different cuts: sirloin 8 oz (A), 90% ground 1 lb (B)",
+   "prep": "Freeze both cuts by Sun Nov 15; thaw the one you'll cook Fri night. A serves 2, no lunches; B makes 6: lunches + freeze 2."
+  }
+ ],
+ "grocery": [
+  {
+   "section": "Produce",
+   "items": [
+    "Broccoli rabe — 1 bunch (1 1/4 lb)",
+    "Butternut squash — 1 lb",
+    "Baby spinach — 5 oz bag",
+    "Shallots — 2 small (1/4 cup minced)",
+    "Sage — 4 leaves",
+    "Garlic — 2 heads (about 22 cloves)",
+    "Portobello caps, large — 8",
+    "Cherry tomatoes — 1 pint (24)",
+    "Baby arugula — 8 oz (12 cups)",
+    "Basil — 12 leaves",
+    "Cauliflower — 2 small heads",
+    "Carrots — 1 1/2 lb (about 8 medium)",
+    "Baby rainbow carrots — 1 lb",
+    "Broccoli florets — 4 cups (about 1 lb)",
+    "Bok choy — 2 cups chopped (2 baby heads)",
+    "Zucchini — 4 medium",
+    "Bell peppers — 3 (1 red, 1 yellow, 1 red or orange)",
+    "Tomatoes — 3 large",
+    "Butter lettuce — 1 head (also covers Souvlaki's 1 cup romaine)",
+    "English cucumber — 1 (also covers Shawarma's 2 Persian cucumbers)",
+    "Yellow onions — 3 (1 large)",
+    "White onion, large — 1",
+    "Red onions — 2",
+    "Scallions — 2 bunches",
+    "Jalapeños — 3",
+    "Ginger root — 1 small knob",
+    "Avocados, small Hass — 3 (buy firm)",
+    "Limes — 6",
+    "Lemons — 3",
+    "Cilantro — 2 bunches",
+    "Mint — 1 bunch",
+    "Parsley — 1 bunch",
+    "Chives — 1 small pack",
+    "Fresh oregano — 1 small pack (2 Tbsp)",
+    "Russet potato — 1 small (5 1/2 oz)",
+    "Sweet potato — 1 small (5 1/2 oz)",
+    "Green cabbage — 2 cups shredded (1/4 small head)"
+   ]
+  },
+  {
+   "section": "Meat & Seafood",
+   "items": [
+    "Italian chicken sausage, sweet or spicy — 12 oz",
+    "Boneless skinless chicken thighs — 1 1/4 lb",
+    "Boneless skinless chicken breast — 2 1/2 lb (1 1/2 lb Wed, 1 lb Fri)",
+    "Lean beef sirloin steak, 1/2 inch — 8 oz",
+    "90% lean ground beef — 1 lb",
+    "Raw peeled large shrimp, frozen — 1/2 lb",
+    "Bay scallops, frozen — 1/2 lb",
+    "Cooked peeled shrimp, frozen — 8 oz",
+    "Skinless wild salmon fillets, frozen — 2 (6 oz each)"
+   ]
+  },
+  {
+   "section": "Dairy & Eggs",
+   "items": [
+    "Plain 2% Greek yogurt — 2 cups",
+    "Part-skim mozzarella — 8 oz",
+    "Parmesan — about 1/2 cup (shredded and shaved)",
+    "Pecorino Romano, grated — 1/4 cup",
+    "Reduced-fat Mexican cheese blend — 1 cup",
+    "Shredded cheddar — 3/4 cup (3 oz)",
+    "Light sour cream — 1/2 cup",
+    "Whipped butter — 1 Tbsp",
+    "Eggs — 2"
+   ]
+  },
+  {
+   "section": "Canned & Dry",
+   "items": [
+    "Shelf-stable gnocchi — 1 lb",
+    "Chickpea pasta — 17 oz (10 oz penne or casarecce, 7 oz cavatappi)",
+    "Whole-wheat elbow macaroni — 8 oz",
+    "Chickpeas, 15-oz cans — 4",
+    "Cannellini beans, 15-oz cans — 3",
+    "Black beans, 15-oz cans — 2",
+    "Kidney beans, 15-oz can — 1",
+    "No-salt-added tomato sauce, 15-oz cans — 3",
+    "Petite diced tomatoes, 14.5-oz can — 1",
+    "Rotel, 10-oz can — 1",
+    "Chipotles in adobo — 1 small can",
+    "Reduced-sodium chicken broth — 6 cups",
+    "Low-sodium beef broth, 15-oz can — 1",
+    "Pesto — 1/2 cup",
+    "Balsamic glaze — 8 tsp",
+    "Tahini — 1/4 cup",
+    "Kalamata olives — 1/4 cup",
+    "Pine nuts, optional — 4 tsp"
+   ]
+  },
+  {
+   "section": "Frozen",
+   "items": [
+    "Cooked brown rice, frozen — 3 cups",
+    "Peas and carrots — 2 cups",
+    "Corn — 1 1/2 cups"
+   ]
+  },
+  {
+   "section": "Bakery & Tortillas",
+   "items": [
+    "Whole-wheat pocketless pitas — 4",
+    "Whole-wheat naan — 1 pack",
+    "Gluten-free flour tortillas, 6-inch (Siete) — 8",
+    "Corn tortillas, 6-inch — 8"
+   ]
+  }
+ ],
+ "pantry": [
+  "Kosher salt (Diamond Crystal)",
+  "Black pepper",
+  "Red pepper flakes",
+  "Cumin",
+  "Chili powder",
+  "Sweet paprika",
+  "Smoked paprika",
+  "Turmeric",
+  "Curry powder",
+  "Garam masala",
+  "Ground cinnamon",
+  "Ground ginger",
+  "Garlic powder",
+  "Onion powder",
+  "Bay leaves — 2",
+  "Olive oil and extra-virgin olive oil",
+  "Oil spray",
+  "Canola or grapeseed oil",
+  "Toasted sesame oil",
+  "Reduced-sodium soy sauce — 2 Tbsp",
+  "Worcestershire — 1 tsp"
+ ],
+ "pantryNote": "Not needed this week: bouillon, vinegars, honey, maple, flour, Sriracha, gochujang."
+}
