@@ -9,6 +9,7 @@ A static web app for the week's dinners: tonight's two options (A = quick, B = b
 | `index.html`, `app.js`, `app.css` | The app | Yes |
 | `data/plans/YYYY-MM-DD.json` | One file per week, named for its Sunday: names, times, prep notes, grocery list | Yes |
 | `data/recipes.enc.json` | The 28 recipes (fixes written in), AES-GCM encrypted | Encrypted |
+| `sw.js` | Keeps the last good copy of every file so the app opens with no signal | Yes |
 | `private/` | Plaintext recipes and passphrase — git-ignored, never committed | No |
 
 GitHub Pages on a free account requires a public repo. The recipe text comes from a published cookbook, so it is encrypted; the app asks for the passphrase once per phone and remembers it.
@@ -32,6 +33,8 @@ Dinner tonight: https://<user>.github.io/dinner-plan/
 The page always opens on today's two options.
 
 ## Weekly update (Saturday)
+
+This is automatic: the "Saturday dinner plan + grocery list" scheduled task (Saturdays 6:13 am Central) plans the week in the Claude Doc, then commits `data/plans/<next Sunday>.json` here after checking it with `node tools/check-plan.mjs`. To add or fix a week by hand:
 
 Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Create new file**, name it `data/plans/2026-11-22.json`, paste, commit. Old weeks can stay.
 
