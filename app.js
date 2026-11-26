@@ -7,6 +7,23 @@ const LS = {
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// ---------- text polish ----------
+const FRAC = { '1/2': '½', '1/3': '⅓', '2/3': '⅔', '1/4': '¼', '3/4': '¾', '1/8': '⅛', '3/8': '⅜' };
+const FRAC_RE = '(1/2|1/3|2/3|1/4|3/4|1/8|3/8)(?![\\d/])';
+const frac = (s) => String(s ?? '')
+  .replace(new RegExp(`(\\d+) ${FRAC_RE}`, 'g'), (m, w, f) => w + FRAC[f])
+  .replace(new RegExp(`(?<![\\d/])${FRAC_RE}`, 'g'), (f) => FRAC[f]);
+const cap = (s) => String(s ?? '').replace(/^(\W*)([a-z])/, (m, pre, c) => pre + c.toUpperCase());
+// "1 (15-oz) can chickpeas, drained" → ["1 (15-oz) can", "Chickpeas, drained"]; no leading amount → [null, text]
+const UNITS = 'Tbsp|tsp|cups?|oz|lbs?|pinch|cloves?|slices?|sprigs?|bunch|heads?|cans?|stalks?|links?|bags?';
+const QTY_RE = new RegExp(`^((?:\\d[\\d½⅓⅔¼¾⅛⅜.\\/–-]*|[½⅓⅔¼¾⅛⅜])(?:\\s*\\([^)]*\\))?(?:\\s+(?:${UNITS})\\b\\.?)?(?:\\s*\\([^)]*\\))?)\\s+(\\S.*)$`, 'i');
+function splitQty(text) {
+  const t = frac(text);
+  const m = t.match(QTY_RE);
+  return m ? [m[1].replace(/-/g, '‑'), cap(m[2])] : [null, cap(t)];   // non-breaking hyphen keeps "15-oz" whole
+}
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // ---------- dates ----------
@@ -68,6 +85,7 @@ function toast(msg) {
 }
 function header(title, sub = '', back = null) {
   $('#title').textContent = title;
+  $('#title').classList.toggle('long', title.length > 30);
   $('#subtitle').textContent = sub;
   const b = $('#back');
   if (back) { b.hidden = false; b.href = back; } else b.hidden = true;
@@ -79,10 +97,13 @@ function setTab(name) {
   });
 }
 const optCard = (o, letter, back) => `
-  <a class="card opt" href="#/r/${esc(o.id)}?from=${encodeURIComponent(back)}">
-    <div class="badge ${letter === 'B' ? 'b' : ''}">${letter}</div>
-    <div><h3>${esc(o.name)}</h3><div class="time">${esc(o.time)}</div></div>
-    <div class="chev" aria-hidden="true">›</div>
+  <a class="card opt ${letter === 'B' ? 'b' : 'a'}" href="#/r/${esc(o.id)}?from=${encodeURIComponent(back)}">
+    <div>
+      <div class="eyebrow">Option ${letter} · ${letter === 'B' ? 'Bigger cook' : 'Quicker'}</div>
+      <h3>${esc(o.name)}</h3>
+      <div class="time">${esc(frac(o.time))}</div>
+    </div>
+    ${CHEV}
   </a>`;
 const miniRow = (o, letter, back) => `
   <a class="mini" href="#/r/${esc(o.id)}?from=${encodeURIComponent(back)}"><b class="${letter === 'B' ? 'b' : ''}">${letter}</b><span>${esc(o.name)}</span><em>${esc(o.time)}</em></a>`;
@@ -101,15 +122,15 @@ function renderTonight() {
     const today = cur.days.find((x) => x.day === dayName);
     html += `<div class="section-label">Pick one</div>`;
     html += optCard(today.a, 'A', '#/') + optCard(today.b, 'B', '#/');
-    if (today.prep) html += `<div class="note"><strong>Prep:</strong> ${esc(today.prep)}</div>`;
+    if (today.prep) html += `<div class="note"><strong>Prep</strong>${esc(frac(today.prep))}</div>`;
     const tmrwPlan = d.getDay() === 6 ? next : cur;
     const tmrw = tmrwPlan?.days.find((x) => x.day === DAYS[(d.getDay() + 1) % 7]);
     if (tmrw) {
       html += `<div class="section-label">Tomorrow · ${esc(tmrw.day)}</div><div class="card day">${miniRow(tmrw.a, 'A', '#/')}${miniRow(tmrw.b, 'B', '#/')}</div>`;
-      if (tmrw.prep) html += `<div class="note"><strong>Tomorrow's prep:</strong> ${esc(tmrw.prep)}</div>`;
+      if (tmrw.prep) html += `<div class="note"><strong>Tomorrow's prep</strong>${esc(frac(tmrw.prep))}</div>`;
     }
   }
-  if (next) html += `<a class="card" href="#/groceries" style="text-align:center"><strong>Next week (${esc(next.label)}) is planned.</strong><br><span class="muted">Open the grocery list ›</span></a>`;
+  if (next) html += `<a class="card promo" href="#/groceries"><div><strong>Next week is planned</strong><span class="muted">${esc(next.label)} · open the grocery list</span></div>${CHEV}</a>`;
   if (!state.recipes) html += lockedNote();
   view.innerHTML = html;
 }
@@ -156,24 +177,33 @@ function renderGroceries(params) {
   if (!plan) { view.innerHTML = `<div class="empty">No grocery list yet.</div>`; return; }
   const key = `dp.g.${plan.week}`;
   const checked = new Set(LS.get(key, []));
+  const all = plan.grocery.flatMap((s) => s.items);
   let html = weekPicker(which);
-  html += `<div class="row"><button class="btn" id="copy">Copy remaining</button><button class="btn ghost" id="reset">Uncheck all</button></div>`;
+  html += `<div class="progress" id="gp"><div class="bar"><i></i></div><span></span></div>`;
+  html += `<div class="row"><button class="btn small" id="copy">Copy remaining</button><button class="btn small ghost" id="reset">Uncheck all</button></div>`;
   plan.grocery.forEach((sec) => {
-    html += `<div class="section-label">${esc(sec.section)}</div><ul class="list">`;
+    html += `<div class="section-label">${esc(sec.section)}<span>${sec.items.length}</span></div><ul class="list card flush">`;
     sec.items.forEach((it) => {
       const [name, qty] = it.split(' — ');
-      html += `<li><label class="check"><input type="checkbox" value="${esc(it)}" ${checked.has(it) ? 'checked' : ''}><span class="box">✓</span><span class="lbl">${esc(name)}${qty ? ` <span class="qty">· ${esc(qty)}</span>` : ''}</span></label></li>`;
+      html += `<li><label class="check"><input type="checkbox" value="${esc(it)}" ${checked.has(it) ? 'checked' : ''}><span class="box"></span><span class="lbl">${esc(cap(frac(name)))}${qty ? `<span class="qty">${esc(frac(qty))}</span>` : ''}</span></label></li>`;
     });
     html += `</ul>`;
   });
   if (plan.pantry?.length) {
-    html += `<details><summary>Check the pantry (${plan.pantry.length})</summary><ul class="list">${plan.pantry.map((p) => `<li class="check" style="cursor:default"><span class="lbl">${esc(p)}</span></li>`).join('')}</ul>${plan.pantryNote ? `<p class="muted">${esc(plan.pantryNote)}</p>` : ''}</details>`;
+    html += `<details class="card flush pantry"><summary>Check the pantry<span>${plan.pantry.length}</span></summary><ul class="list">${plan.pantry.map((p) => `<li class="plain">${esc(cap(frac(p)))}</li>`).join('')}</ul>${plan.pantryNote ? `<p class="muted pantry-note">${esc(plan.pantryNote)}</p>` : ''}</details>`;
   }
   view.innerHTML = html;
   bindWeekPicker('#/groceries');
+  const progress = () => {
+    const n = all.filter((it) => checked.has(it)).length;
+    $('#gp i').style.width = `${all.length ? (100 * n) / all.length : 0}%`;
+    $('#gp span').textContent = n === all.length && n ? 'All done' : `${n} of ${all.length} in the cart`;
+  };
+  progress();
   view.querySelectorAll('input[type=checkbox]').forEach((c) => c.addEventListener('change', () => {
     c.checked ? checked.add(c.value) : checked.delete(c.value);
     LS.set(key, [...checked]);
+    progress();
   }));
   $('#reset').addEventListener('click', () => { checked.clear(); LS.set(key, []); renderGroceries(params); });
   $('#copy').addEventListener('click', async () => {
@@ -197,15 +227,23 @@ function renderRecipe(id, params) {
     view.innerHTML = state.recipes ? `<div class="empty">This recipe isn't in the library.</div>` : lockedNote();
     return;
   }
-  header(r.name, '', from);
+  header(r.name, r.book || '', from);
   const done = new Set(JSON.parse(sessionStorage.getItem(`dp.r.${id}`) || '[]'));
-  let html = `<p class="recipe-meta">${esc(r.meta)}</p><div class="section-label">Ingredients</div>`;
+  const f = recipeFacts(r);
+  let html = `<div class="facts">${f.cells.map(([k, v]) => `<div><span>${k}</span><b>${esc(frac(v))}</b></div>`).join('')}</div>`;
+  if (f.tags.length) html += `<div class="tags">${f.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>`;
+  const count = r.ingredients.reduce((n, g) => n + g.items.length, 0);
+  html += `<div class="section-label">Ingredients<span>${count}</span></div><div class="card flush ings">`;
   let k = 0;
   r.ingredients.forEach((g) => {
     if (g.group) html += `<div class="ing-group">${esc(g.group)}</div>`;
-    html += `<ul class="list">${g.items.map((it) => { const i = k++; return `<li><label class="check"><input type="checkbox" data-i="${i}" ${done.has(i) ? 'checked' : ''}><span class="box">✓</span><span class="lbl">${esc(it)}</span></label></li>`; }).join('')}</ul>`;
+    html += `<ul class="list">${g.items.map((it) => {
+      const i = k++;
+      const [qty, name] = splitQty(it);
+      return `<li><label class="check ing"><input type="checkbox" data-i="${i}" ${done.has(i) ? 'checked' : ''}><span class="box"></span>${qty ? `<span class="q">${esc(qty)}</span>` : ''}<span class="lbl${qty ? '' : ' wide'}">${esc(name)}</span></label></li>`;
+    }).join('')}</ul>`;
   });
-  html += `<div class="section-label">Steps</div><ol class="steps">${r.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`;
+  html += `</div><div class="section-label">Method<span>${r.steps.length} steps</span></div><ol class="steps">${r.steps.map((s) => `<li>${esc(cap(frac(s)))}</li>`).join('')}</ol>`;
   view.innerHTML = html;
   view.querySelectorAll('input[type=checkbox]').forEach((c) => c.addEventListener('change', () => {
     const i = +c.dataset.i; c.checked ? done.add(i) : done.delete(i);
@@ -289,11 +327,24 @@ function recipeList(by, query, back) {
       <a class="ritem" href="#/r/${esc(id)}?from=${encodeURIComponent(back)}">
         <span class="rname">${esc(r.name)}${planned.has(id) ? ' <span class="tag">Planned</span>' : ''}</span>
         <span class="rmeta">${esc(by === 'book' ? `${r.type || ''} · ${methodOf(r)}` : by === 'type' ? `${methodOf(r)} · ${r.book || ''}` : `${r.type || ''} · ${r.book || ''}`)}</span>
-        ${m.via ? `<span class="rvia">Has: ${esc(m.via)}</span>` : ''}
+        ${m.via ? `<span class="rvia">Has ${esc(splitQty(m.via)[1].toLowerCase())}</span>` : ''}
+        ${CHEV}
       </a>`).join('');
     html += `</div>`;
   });
   return html;
+}
+
+// "Serves 4 (2 caps each) · Sheet pan · 30 min · Vegetarian" → cells [Serves, Method, Time] + tags
+function recipeFacts(r) {
+  const parts = String(r.meta || '').split(' · ').map((s) => s.trim()).filter(Boolean);
+  const serves = (parts[0] || '').replace(/^Serves\s*/i, '');
+  let method = parts[1] || '';
+  let time = parts[2] || '';
+  const m = method.match(/^(.*?)\s+([\d–-]+\s*h\b.*)$/);   // "Slow cooker 6 h"
+  if (m) { method = m[1]; if (!time) time = `${m[2]} on low`; }
+  const cells = [['Serves', serves], ['Method', method], ['Time', time]].filter(([, v]) => v);
+  return { cells, tags: parts.slice(3) };
 }
 
 function renderUnlock() {
