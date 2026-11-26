@@ -33,10 +33,22 @@ const sundayOf = (d) => addDays(new Date(d.getFullYear(), d.getMonth(), d.getDat
 const fmt = (d, o) => d.toLocaleDateString('en-US', o);
 // Holidays get no planned dinner: the household cooks its own special meal.
 function holidayOn(d) {
-  const m = d.getMonth(), day = d.getDate();
+  const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+  if (m === 11 && day === 24) return 'Christmas Eve';
   if (m === 11 && day === 25) return 'Christmas';
+  if (m === 11 && day === 31) return "New Year's Eve";
   if (m === 10 && d.getDay() === 4 && day >= 22 && day <= 28) return 'Thanksgiving';
+  const [em, ed] = easter(y);
+  if (m === em && day === ed) return 'Easter';
   return null;
+}
+// Western Easter Sunday (anonymous Gregorian algorithm) → [monthIndex, day]
+function easter(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const n = h + l - 7 * m + 114;
+  return [Math.floor(n / 31) - 1, (n % 31) + 1];
 }
 // ---------- data ----------
 const state = { plans: {}, recipes: null, enc: null, today: new Date() };

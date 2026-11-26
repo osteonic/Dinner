@@ -37,12 +37,24 @@ const d = new Date(`${week}T12:00:00Z`);
 if (Number.isNaN(d.getTime()) || d.getUTCDay() !== 0) errs.push(`${week} is not a Sunday`);
 for (const k of ['label', 'summary']) if (!str(p[k])) errs.push(`"${k}" is missing`);
 
-// Holidays get no recipes: the household makes its own special meal.
+// Holidays get no recipes: the household makes its own special meal. Keep in step with holidayOn() in app.js.
 function holidayOn(date) {
-  const m = date.getUTCMonth(), d = date.getUTCDate();
+  const y = date.getUTCFullYear(), m = date.getUTCMonth(), d = date.getUTCDate();
+  if (m === 11 && d === 24) return 'Christmas Eve';
   if (m === 11 && d === 25) return 'Christmas';
+  if (m === 11 && d === 31) return "New Year's Eve";
   if (m === 10 && date.getUTCDay() === 4 && d >= 22 && d <= 28) return 'Thanksgiving';
+  const [em, ed] = easter(y);
+  if (m === em && d === ed) return 'Easter';
   return null;
+}
+// Western Easter Sunday (anonymous Gregorian algorithm) → [monthIndex, day]
+function easter(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const n = h + l - 7 * m + 114;
+  return [Math.floor(n / 31) - 1, (n % 31) + 1];
 }
 
 if (!Array.isArray(p.days) || p.days.length !== 7) errs.push('"days" must list all 7 days');
