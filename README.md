@@ -8,7 +8,7 @@ A static web app for the week's dinners: tonight's two options (A = quick, B = b
 | --- | --- | --- |
 | `index.html`, `app.js`, `app.css` | The app | Yes |
 | `data/plans/YYYY-MM-DD.json` | One file per week, named for its Sunday: names, times, prep notes, grocery list | Yes |
-| `data/recipes.enc.json` | The 28 recipes (fixes written in), AES-GCM encrypted | Encrypted |
+| `data/recipes.enc.json` | Every recipe exactly as printed, plus its guideline suggestions, AES-GCM encrypted | Encrypted |
 | `sw.js` | Keeps the last good copy of every file so the app opens with no signal | Yes |
 | `private/` | Plaintext recipes and passphrase — git-ignored, never committed | No |
 
@@ -61,6 +61,8 @@ Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Cr
 `days` has all seven, Sunday first. Holidays get no recipes: Christmas Eve, Christmas, New Year's Eve, Thanksgiving (fourth Thursday of November) and Easter Sunday. Write that day as exactly `{ "day": "Thursday", "holiday": "Thanksgiving" }`, using one of those names (Christmas Day is `"Christmas"`). The list lives in `holidayOn()` in both `app.js` and `tools/check-plan.mjs`. The app shows a holiday card on those dates even if a plan lists recipes, and `tools/check-plan.mjs` rejects a plan that schedules them. A recipe `id` is its library name lowercased with every run of non-letters/digits turned into `-`. Grocery items are `name — quantity`.
 
 ## Changing recipes or the passphrase
+
+Recipes are stored **exactly as printed**; never work a fix into the ingredients or steps. What it takes to meet the guidelines (fiber 9 g+, sodium ≤ 800 mg, 1 cup of vegetables per serving) goes in `suggestions`: `items` (what to add or change) and `outcome` (nutrition with them applied), shown on the recipe page under Suggestions. `nutrition` is the printed per-serving line. Steps starting `Stovetop:`, `Oven:` or `Variation` show as notes under the method.
 
 Each recipe in `private/recipes.json` has `name`, `meta` ("Serves 4 · Sheet pan · 40 min"; the second part is the cooking method), `ingredients`, `steps`, plus `book` (the cookbook's title) and `type` (main protein: Chicken, Beef, Seafood, Vegetarian, …). The Recipes tab groups by those three and searches names and ingredients. When adding a cookbook, give every new recipe its `book` and `type`, and add its id to the list in `tools/check-plan.mjs`.
 

@@ -214,8 +214,10 @@ function renderGroceries(params) {
   plan.grocery.forEach((sec) => {
     html += `<div class="section-label">${esc(sec.section)}<span>${sec.items.length}</span></div><ul class="list card flush">`;
     sec.items.forEach((it) => {
-      const [name, qty] = it.split(' — ');
-      html += `<li><label class="check"><input type="checkbox" value="${esc(it)}" ${checked.has(it) ? 'checked' : ''}><span class="box"></span><span class="lbl">${esc(cap(frac(name)))}${qty ? `<span class="qty">${esc(frac(qty))}</span>` : ''}</span></label></li>`;
+      const [name, rawQty = ''] = it.split(' — ');
+      const sugg = /\(suggestion\)\s*$/i.test(rawQty);   // only needed if she follows the guideline suggestions
+      const qty = rawQty.replace(/\s*\(suggestion\)\s*$/i, '');
+      html += `<li><label class="check"><input type="checkbox" value="${esc(it)}" ${checked.has(it) ? 'checked' : ''}><span class="box"></span><span class="lbl">${esc(cap(frac(name)))}${sugg ? ' <span class="tag sg">Suggestion</span>' : ''}${qty ? `<span class="qty">${esc(frac(qty))}</span>` : ''}</span></label></li>`;
     });
     html += `</ul>`;
   });
@@ -273,7 +275,12 @@ function renderRecipe(id, params) {
       return `<li><label class="check ing"><input type="checkbox" data-i="${i}" ${done.has(i) ? 'checked' : ''}><span class="box"></span>${qty ? `<span class="q">${esc(qty)}</span>` : ''}<span class="lbl${qty ? '' : ' wide'}">${esc(name)}</span></label></li>`;
     }).join('')}</ul>`;
   });
-  html += `</div><div class="section-label">Method<span>${r.steps.length} steps</span></div><ol class="steps">${r.steps.map((s) => `<li>${esc(cap(frac(s)))}</li>`).join('')}</ol>`;
+  // Lines like "Stovetop: …" or "Oven: …" are the book's alternate method, not a numbered step.
+  const isAlt = (s) => /^(Stovetop|Oven|Variation)\b/i.test(s);
+  const main = r.steps.filter((s) => !isAlt(s)), alts = r.steps.filter(isAlt);
+  html += `</div><div class="section-label">Method<span>${main.length} steps</span></div><ol class="steps">${main.map((s) => `<li>${esc(cap(frac(s)))}</li>`).join('')}</ol>`;
+  alts.forEach((s) => { html += `<div class="note"><strong>${esc(s.match(/^(\w+)/)[1])}</strong>${esc(cap(frac(s.replace(/^\w+\s*[:—–-]\s*/, ''))))}</div>`; });
+  html += suggestionsCard(r);
   view.innerHTML = html;
   view.querySelectorAll('input[type=checkbox]').forEach((c) => c.addEventListener('change', () => {
     const i = +c.dataset.i; c.checked ? done.add(i) : done.delete(i);
@@ -298,7 +305,7 @@ const plannedIds = () => new Set(Object.values(state.plans).flatMap((p) => p?.da
 function matchRecipe(r, words) {
   if (!words.length) return { via: null };
   const head = norm([r.name, r.book, r.type, methodOf(r), r.meta].join(' '));
-  const ings = allIngredients(r);
+  const ings = [...allIngredients(r), ...(r.suggestions?.items || [])];
   const hay = head + ' ' + norm(ings.join(' '));
   if (!words.every((w) => hay.includes(w))) return null;
   if (words.every((w) => head.includes(w))) return { via: null };
@@ -362,6 +369,21 @@ function recipeList(by, query, back) {
       </a>`).join('');
     html += `</div>`;
   });
+  return html;
+}
+
+// The recipe above stays exactly as printed; this card says what to add or change to meet the guidelines.
+const GUIDELINES = 'fiber 9 g or more, sodium 800 mg or less, and at least 1 cup of vegetables per serving';
+function suggestionsCard(r) {
+  const s = r.suggestions || { items: [] };
+  const printed = r.nutrition ? `<div><span>${esc(/as \d/.test(r.nutrition.label) ? `As printed (${r.nutrition.label.match(/as \d+/)[0]})` : 'As printed')}</span><b>${esc(frac(r.nutrition.value))}</b></div>` : '';
+  let html = `<div class="section-label">Suggestions<span>for the guidelines</span></div><div class="card suggest">`;
+  if (!s.items.length) {
+    html += `<p class="ok">Meets the guidelines as printed. No changes needed.</p>`;
+  } else {
+    html += `<p class="lead">To reach ${GUIDELINES}:</p><ul class="sugg">${s.items.map((it) => `<li>${esc(cap(frac(it)))}</li>`).join('')}</ul>`;
+  }
+  html += `<div class="nut">${printed}${s.outcome ? `<div><span>With suggestions</span><b>${esc(cap(frac(s.outcome)))}</b></div>` : ''}</div></div>`;
   return html;
 }
 
