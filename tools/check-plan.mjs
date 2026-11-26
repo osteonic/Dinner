@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
-// The 28 recipes in data/recipes.enc.json. Excluded recipes (#8, #22, #23) are not here.
+// Every recipe in data/recipes.enc.json. Excluded recipes (#8, #22, #23) are not here.
 const IDS = new Set([
   'lemon-chicken-and-brown-rice-pilaf', 'weeknight-chicken-souvlaki', 'seafood-fried-brown-rice',
   'shrimp-quesadillas-with-stuffed-avocados', 'spicy-peanut-chicken-and-vegetables',
@@ -19,6 +19,10 @@ const IDS = new Set([
   'loaded-buffalo-chicken-stuffed-sweet-potatoes', 'chipotle-chicken-tostadas',
   'honey-balsamic-grilled-chicken-and-vegetables', 'shawarma-spiced-grilled-chicken-thighs-with-tahini',
   'pot-roast-with-potatoes-and-vegetables',
+  // Mediterranean Instant Pot
+  'lemony-chicken-with-fingerling-potatoes-and-olives', 'spiced-winter-squash-with-halloumi-and-shaved-brussels-sprouts',
+  // The Complete Cooking for Two Cookbook
+  'grilled-cheese-sandwiches-with-caramelized-onion-and-apple',
 ]);
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SECTIONS = ['Produce', 'Meat & Seafood', 'Dairy & Eggs', 'Canned & Dry', 'Frozen', 'Bakery & Tortillas'];
