@@ -189,7 +189,7 @@ function lockedNote() {
 
 function renderRecipe(id, params) {
   const from = params.get('from') || '#/';
-  setTab(from.startsWith('#/week') ? 'week' : from.startsWith('#/groceries') ? 'groceries' : 'tonight');
+  setTab(from.startsWith('#/week') ? 'week' : from.startsWith('#/groceries') ? 'groceries' : from.startsWith('#/recipes') ? 'recipes' : 'tonight');
   const r = state.recipes?.[id];
   if (!r) {
     const name = Object.values(state.plans).flatMap((p) => p?.days ?? []).flatMap((d) => [d.a, d.b]).find((o) => o.id === id)?.name ?? 'Recipe';
@@ -212,6 +212,88 @@ function renderRecipe(id, params) {
     try { sessionStorage.setItem(`dp.r.${id}`, JSON.stringify([...done])); } catch { /* ignore */ }
   }));
   window.scrollTo(0, 0);
+}
+
+// ---------- recipe browser ----------
+const GROUPINGS = {
+  book: { label: 'Book', of: (r) => r.book || 'Other recipes' },
+  type: { label: 'Protein', of: (r) => r.type || 'Other', order: ['Chicken', 'Beef', 'Seafood', 'Vegetarian'] },
+  method: { label: 'Method', of: (r) => methodOf(r) },
+};
+const methodOf = (r) => (String(r.meta || '').split(' · ')[1] || 'Other').replace(/\s+[\d–-]+\s*h\b.*$/, '').trim();
+const norm = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const allIngredients = (r) => (r.ingredients || []).flatMap((g) => g.items || []);
+const plannedIds = () => new Set(Object.values(state.plans).flatMap((p) => p?.days ?? []).flatMap((d) => [d.a?.id, d.b?.id]));
+
+// Every word of the query must appear somewhere in the recipe. Returns null (no match),
+// or the first ingredient that matched when the name alone didn't, to show why it's listed.
+function matchRecipe(r, words) {
+  if (!words.length) return { via: null };
+  const head = norm([r.name, r.book, r.type, methodOf(r), r.meta].join(' '));
+  const ings = allIngredients(r);
+  const hay = head + ' ' + norm(ings.join(' '));
+  if (!words.every((w) => hay.includes(w))) return null;
+  if (words.every((w) => head.includes(w))) return { via: null };
+  return { via: ings.find((it) => words.some((w) => !head.includes(w) && norm(it).includes(w))) || null };
+}
+
+function renderRecipes(params) {
+  setTab('recipes');
+  const by = GROUPINGS[params.get('by')] ? params.get('by') : 'book';
+  const q = params.get('q') || '';
+  const total = state.recipes ? Object.keys(state.recipes).length : 0;
+  header('Recipes', total ? `${total} recipes` : '');
+  if (!state.recipes) { view.innerHTML = lockedNote(); return; }
+  view.innerHTML = `
+    <input class="text search" id="rq" type="search" placeholder="Search recipes or ingredients" value="${esc(q)}"
+      autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" aria-label="Search recipes">
+    <div class="seg" role="group" aria-label="Group by">
+      ${Object.entries(GROUPINGS).map(([k, g]) => `<button data-by="${k}" aria-pressed="${k === by}">${g.label}</button>`).join('')}
+    </div>
+    <div id="rlist"></div>`;
+  const input = $('#rq');
+  const draw = () => {
+    const query = input.value;
+    const back = `#/recipes?by=${by}${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ''}`;
+    history.replaceState(null, '', location.pathname + back);   // so Back from a recipe returns to this search
+    $('#rlist').innerHTML = recipeList(by, query, back);
+  };
+  input.addEventListener('input', draw);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+  view.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+    const query = input.value.trim();
+    location.hash = `#/recipes?by=${b.dataset.by}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+  }));
+  draw();
+}
+
+function recipeList(by, query, back) {
+  const words = norm(query).split(/\s+/).filter(Boolean);
+  const planned = plannedIds();
+  const g = GROUPINGS[by];
+  const groups = new Map();
+  Object.entries(state.recipes)
+    .map(([id, r]) => ({ id, r, m: matchRecipe(r, words) }))
+    .filter((x) => x.m)
+    .sort((a, b) => a.r.name.localeCompare(b.r.name))
+    .forEach((x) => { const k = g.of(x.r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); });
+  if (!groups.size) return `<div class="empty">No recipes match “${esc(query.trim())}”.</div>`;
+  const order = g.order || [];
+  const keys = [...groups.keys()].sort((a, b) => ((order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99)) || a.localeCompare(b));
+  const count = [...groups.values()].reduce((n, xs) => n + xs.length, 0);
+  let html = words.length ? `<p class="muted result-count">${count} match${count === 1 ? '' : 'es'}</p>` : '';
+  keys.forEach((k) => {
+    const xs = groups.get(k);
+    html += `<div class="section-label">${esc(k)} · ${xs.length}</div><div class="card rlist">`;
+    html += xs.map(({ id, r, m }) => `
+      <a class="ritem" href="#/r/${esc(id)}?from=${encodeURIComponent(back)}">
+        <span class="rname">${esc(r.name)}${planned.has(id) ? ' <span class="tag">Planned</span>' : ''}</span>
+        <span class="rmeta">${esc(by === 'book' ? `${r.type || ''} · ${methodOf(r)}` : by === 'type' ? `${methodOf(r)} · ${r.book || ''}` : `${r.type || ''} · ${r.book || ''}`)}</span>
+        ${m.via ? `<span class="rvia">Has: ${esc(m.via)}</span>` : ''}
+      </a>`).join('');
+    html += `</div>`;
+  });
+  return html;
 }
 
 function renderUnlock() {
@@ -246,6 +328,7 @@ async function route() {
   if (path.startsWith('/r/')) return renderRecipe(decodeURIComponent(path.slice(3)), params);
   if (path === '/week') return renderWeek(params);
   if (path === '/groceries') return renderGroceries(params);
+  if (path === '/recipes') return renderRecipes(params);
   if (path === '/unlock') return renderUnlock();
   return renderTonight();
 }

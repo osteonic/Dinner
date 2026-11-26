@@ -1,6 +1,6 @@
 # Dinner Plan
 
-A static web app for the week's dinners: tonight's two options (A = quick, B = bigger cook), each recipe with tap-to-check ingredients and numbered steps, the week at a glance, and a grocery checklist. No build step, no backend — it runs on GitHub Pages.
+A static web app for the week's dinners: tonight's two options (A = quick, B = bigger cook), each recipe with tap-to-check ingredients and numbered steps, the week at a glance, a grocery checklist, and a searchable recipe library grouped by book, protein or cooking method. No build step, no backend — it runs on GitHub Pages.
 
 ## How it works
 
@@ -61,6 +61,8 @@ Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Cr
 `days` has all seven, Sunday first. A recipe `id` is its library name lowercased with every run of non-letters/digits turned into `-`. Grocery items are `name — quantity`.
 
 ## Changing recipes or the passphrase
+
+Each recipe in `private/recipes.json` has `name`, `meta` ("Serves 4 · Sheet pan · 40 min"; the second part is the cooking method), `ingredients`, `steps`, plus `book` (the cookbook's title) and `type` (main protein: Chicken, Beef, Seafood, Vegetarian, …). The Recipes tab groups by those three and searches names and ingredients. When adding a cookbook, give every new recipe its `book` and `type`, and add its id to the list in `tools/check-plan.mjs`.
 
 Edit `private/recipes.json`, then:
 
