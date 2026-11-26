@@ -37,9 +37,26 @@ const d = new Date(`${week}T12:00:00Z`);
 if (Number.isNaN(d.getTime()) || d.getUTCDay() !== 0) errs.push(`${week} is not a Sunday`);
 for (const k of ['label', 'summary']) if (!str(p[k])) errs.push(`"${k}" is missing`);
 
+// Holidays get no recipes: the household makes its own special meal.
+function holidayOn(date) {
+  const m = date.getUTCMonth(), d = date.getUTCDate();
+  if (m === 11 && d === 25) return 'Christmas';
+  if (m === 10 && date.getUTCDay() === 4 && d >= 22 && d <= 28) return 'Thanksgiving';
+  return null;
+}
+
 if (!Array.isArray(p.days) || p.days.length !== 7) errs.push('"days" must list all 7 days');
 else p.days.forEach((day, i) => {
   if (day.day !== DAYS[i]) errs.push(`days[${i}] should be ${DAYS[i]}, not ${JSON.stringify(day.day)}`);
+  const date = new Date(d.getTime() + i * 86400000);
+  const hol = Number.isNaN(d.getTime()) ? null : holidayOn(date);
+  if (hol) {
+    if (day.holiday !== hol || day.a || day.b) {
+      errs.push(`${DAYS[i]} is ${hol}: it must be exactly {"day": "${DAYS[i]}", "holiday": "${hol}"}, with no recipes`);
+    }
+    return;
+  }
+  if (day.holiday) { errs.push(`${DAYS[i]} is marked as a holiday ("${day.holiday}") but isn't Thanksgiving or Christmas`); return; }
   for (const opt of ['a', 'b']) {
     const o = day[opt];
     const where = `${DAYS[i]} ${opt.toUpperCase()}`;

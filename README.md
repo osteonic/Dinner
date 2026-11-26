@@ -58,7 +58,7 @@ Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Cr
 }
 ```
 
-`days` has all seven, Sunday first. A recipe `id` is its library name lowercased with every run of non-letters/digits turned into `-`. Grocery items are `name — quantity`.
+`days` has all seven, Sunday first. Thanksgiving (fourth Thursday of November) and Christmas Day get no recipes: write that day as exactly `{ "day": "Thursday", "holiday": "Thanksgiving" }` (or `"Christmas"`). The app shows a holiday card on those dates even if a plan lists recipes, and `tools/check-plan.mjs` rejects a plan that schedules them. A recipe `id` is its library name lowercased with every run of non-letters/digits turned into `-`. Grocery items are `name — quantity`.
 
 ## Changing recipes or the passphrase
 

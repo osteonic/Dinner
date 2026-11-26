@@ -31,7 +31,13 @@ const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const sundayOf = (d) => addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -d.getDay());
 const fmt = (d, o) => d.toLocaleDateString('en-US', o);
-
+// Holidays get no planned dinner: the household cooks its own special meal.
+function holidayOn(d) {
+  const m = d.getMonth(), day = d.getDate();
+  if (m === 11 && day === 25) return 'Christmas';
+  if (m === 10 && d.getDay() === 4 && day >= 22 && day <= 28) return 'Thanksgiving';
+  return null;
+}
 // ---------- data ----------
 const state = { plans: {}, recipes: null, enc: null, today: new Date() };
 
@@ -120,12 +126,23 @@ function renderTonight() {
     html = `<div class="empty">No plan for this week yet.<br>It's added each Saturday morning.</div>`;
   } else {
     const today = cur.days.find((x) => x.day === dayName);
-    html += `<div class="section-label">Pick one</div>`;
-    html += optCard(today.a, 'A', '#/') + optCard(today.b, 'B', '#/');
-    if (today.prep) html += `<div class="note"><strong>Prep</strong>${esc(frac(today.prep))}</div>`;
+    const hol = today?.holiday || holidayOn(d);
+    if (hol) {
+      html += `<div class="card holiday"><div class="eyebrow">${esc(hol)}</div><h3>Happy ${esc(hol)}!</h3><p>No plan tonight: enjoy the holiday meal.</p></div>`;
+      if (today?.a && today?.b) {   // a plan made before holidays were skipped: keep its options within reach
+        html += `<details class="card flush pantry"><summary>If plans change<span>2 options</span></summary><div class="hol-opts">${miniRow(today.a, 'A', '#/')}${miniRow(today.b, 'B', '#/')}</div></details>`;
+      }
+    } else if (today?.a) {
+      html += `<div class="section-label">Pick one</div>`;
+      html += optCard(today.a, 'A', '#/') + optCard(today.b, 'B', '#/');
+      if (today.prep) html += `<div class="note"><strong>Prep</strong>${esc(frac(today.prep))}</div>`;
+    }
     const tmrwPlan = d.getDay() === 6 ? next : cur;
     const tmrw = tmrwPlan?.days.find((x) => x.day === DAYS[(d.getDay() + 1) % 7]);
-    if (tmrw) {
+    const tmrwHol = tmrw?.holiday || holidayOn(addDays(d, 1));
+    if (tmrwHol) {
+      html += `<div class="section-label">Tomorrow · ${esc(DAYS[(d.getDay() + 1) % 7])}</div><div class="note"><strong>${esc(tmrwHol)}</strong>No plan: it's your holiday meal.</div>`;
+    } else if (tmrw?.a) {
       html += `<div class="section-label">Tomorrow · ${esc(tmrw.day)}</div><div class="card day">${miniRow(tmrw.a, 'A', '#/')}${miniRow(tmrw.b, 'B', '#/')}</div>`;
       if (tmrw.prep) html += `<div class="note"><strong>Tomorrow's prep</strong>${esc(frac(tmrw.prep))}</div>`;
     }
@@ -158,9 +175,10 @@ function renderWeek(params) {
   let html = weekPicker(which);
   plan.days.forEach((x, i) => {
     const date = addDays(sun, i);
-    html += `<div class="card day ${iso(date) === todayIso ? 'today' : ''}">
-      <div class="day-head"><h3>${esc(x.day)}</h3><span>${fmt(date, { month: 'short', day: 'numeric' })}</span></div>
-      ${miniRow(x.a, 'A', back)}${miniRow(x.b, 'B', back)}
+    const hol = x.holiday || holidayOn(date);
+    html += `<div class="card day ${iso(date) === todayIso ? 'today' : ''} ${hol ? 'is-holiday' : ''}">
+      <div class="day-head"><h3>${esc(x.day)}${hol ? ` <span class="tag">${esc(hol)}</span>` : ''}</h3><span>${fmt(date, { month: 'short', day: 'numeric' })}</span></div>
+      ${hol ? `<p class="hol-line">Holiday meal: no plan.</p>` : `${miniRow(x.a, 'A', back)}${miniRow(x.b, 'B', back)}`}
     </div>`;
   });
   view.innerHTML = html;
