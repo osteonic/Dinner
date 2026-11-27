@@ -62,7 +62,7 @@ Add `data/plans/<next Sunday>.json` (format below). On GitHub: **Add file → Cr
 
 ## Changing recipes or the passphrase
 
-Recipes are stored **exactly as printed**; never work a fix into the ingredients or steps. What it takes to meet the guidelines (fiber 9 g+, sodium ≤ 800 mg, 1 cup of vegetables per serving) goes in `suggestions`: `items` (what to add or change) and `outcome` (nutrition with them applied), shown on the recipe page under Suggestions. `nutrition` is the printed per-serving line. Steps starting `Stovetop:`, `Oven:` or `Variation` show as notes under the method.
+Recipes are stored **exactly as printed**; never work a fix into the ingredients or steps. What it takes to meet the guidelines (fiber 9 g+, sodium ≤ 800 mg, 1 cup of vegetables per serving) goes in `suggestions`: `items` (what to add or change) and `outcome` (nutrition with them applied), shown on the recipe page under Suggestions. `nutrition` is the printed per-serving line. Steps starting `Stovetop:`, `Oven:` or `Variation` show as notes under the method. Woven-in suggestions live in `suggestions.ingredients` (add / change / addGroup ops) and `suggestions.steps` (append to a step, or an extra step after one); the app shows them in green with a switch to hide them.
 
 Each recipe in `private/recipes.json` has `name`, `meta` ("Serves 4 · Sheet pan · 40 min"; the second part is the cooking method), `ingredients`, `steps`, plus `book` (the cookbook's title) and `type` (main protein: Chicken, Beef, Seafood, Vegetarian, …). The Recipes tab groups by those three and searches names and ingredients. When adding a cookbook, give every new recipe its `book` and `type`, and add its id to the list in `tools/check-plan.mjs`.
 

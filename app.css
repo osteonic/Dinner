@@ -183,6 +183,35 @@ a.card:active { transform: scale(.985); }
   content: ""; position: absolute; left: 13.5px; top: 32px; bottom: 4px; width: 1px; background: var(--line);
 }
 
+/* Guideline extras woven into the printed recipe: green, and hideable with the switch. */
+.legend { display: flex; align-items: center; gap: 8px; margin: -2px 2px 10px; font-size: 14px; color: var(--muted); }
+.legend > span:nth-child(2) { flex: 1; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; background: var(--b); flex: none; }
+.switch {
+  flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  border-radius: 999px; padding: 5px 12px 5px 30px; font-size: 13px; font-weight: 650; cursor: pointer; position: relative;
+}
+.switch::before {
+  content: ""; position: absolute; left: 8px; top: 50%; width: 16px; height: 10px; margin-top: -5px; border-radius: 99px;
+  background: var(--line); transition: background .15s;
+}
+.switch::after {
+  content: ""; position: absolute; left: 9px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%;
+  background: var(--surface); transition: transform .15s;
+}
+.switch[aria-checked="true"]::before { background: var(--b); }
+.switch[aria-checked="true"]::after { transform: translateX(6px); }
+.xcount { font-style: normal; color: var(--b); font-weight: 700; }
+li.extra .q, li.extra .lbl { color: var(--b); }
+li.extra .box { border-color: color-mix(in srgb, var(--b) 55%, var(--line)); }
+.ing-group.xgroup { color: var(--b); }
+.chg { display: block; margin-top: 2px; color: var(--b); font-size: 15px; font-weight: 600; }
+.chg::before { content: "→ "; }
+.xtra { color: var(--b); font-weight: 600; }
+.steps li.xstep { counter-increment: none; }
+.steps li.xstep::before { content: "+"; background: var(--b-soft); color: var(--b); font-size: 17px; }
+.hide-extras li.extra, .hide-extras .xgroup, .hide-extras .chg, .hide-extras .xtra, .hide-extras li.xstep, .hide-extras .xcount { display: none; }
+
 .suggest { border-color: color-mix(in srgb, var(--b) 35%, var(--line)); box-shadow: inset 4px 0 0 var(--b), var(--shadow); padding: 16px 18px 16px 20px; }
 .suggest .lead { margin: 0 0 8px; color: var(--ink-2); font-size: 15px; }
 .suggest .ok { margin: 0; font-weight: 600; color: var(--b); }

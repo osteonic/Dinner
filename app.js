@@ -264,28 +264,46 @@ function renderRecipe(id, params) {
   const f = recipeFacts(r);
   let html = `<div class="facts">${f.cells.map(([k, v]) => `<div><span>${k}</span><b>${esc(frac(v))}</b></div>`).join('')}</div>`;
   if (f.tags.length) html += `<div class="tags">${f.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>`;
-  const count = r.ingredients.reduce((n, g) => n + g.items.length, 0);
-  html += `<div class="section-label">Ingredients<span>${count}</span></div><div class="card flush ings">`;
-  let k = 0;
-  r.ingredients.forEach((g) => {
-    if (g.group) html += `<div class="ing-group">${esc(g.group)}</div>`;
-    html += `<ul class="list">${g.items.map((it) => {
-      const i = k++;
-      const [qty, name] = splitQty(it);
-      return `<li><label class="check ing"><input type="checkbox" data-i="${i}" ${done.has(i) ? 'checked' : ''}><span class="box"></span>${qty ? `<span class="q">${esc(qty)}</span>` : ''}<span class="lbl${qty ? '' : ' wide'}">${esc(name)}</span></label></li>`;
+  // The printed recipe is shown untouched; suggestions are woven in as green extras she can hide.
+  const groups = mergedIngredients(r);
+  const hasExtras = groups.some((g) => g.items.some((it) => it.extra || it.change));
+  const printedCount = r.ingredients.reduce((n, g) => n + g.items.length, 0);
+  const extraCount = groups.reduce((n, g) => n + g.items.filter((it) => it.extra).length, 0);
+  html += `<div class="section-label">Ingredients<span>${printedCount}${extraCount ? ` <em class="xcount">+ ${extraCount} extra</em>` : ''}</span></div>`;
+  if (hasExtras) {
+    html += `<div class="legend"><span class="swatch"></span><span>Green = extras to meet the guidelines</span>
+      <button class="switch" id="xtoggle" type="button" role="switch" aria-checked="true">Show extras</button></div>`;
+  }
+  html += `<div class="card flush ings">`;
+  groups.forEach((g, gi) => {
+    if (g.group) html += `<div class="ing-group${g.extra ? ' xgroup' : ''}">${esc(g.group)}${g.extra ? ' <span class="tag sg">Extra</span>' : ''}</div>`;
+    html += `<ul class="list${g.extra ? ' xgroup' : ''}">${g.items.map((it, ii) => {
+      const key = `${it.extra ? 'x' : 'o'}${gi}.${ii}`;
+      const [qty, name] = splitQty(it.text);
+      return `<li class="${it.extra ? 'extra' : ''}"><label class="check ing"><input type="checkbox" data-i="${key}" ${done.has(key) ? 'checked' : ''}><span class="box"></span>${qty ? `<span class="q">${esc(qty)}</span>` : ''}<span class="lbl${qty ? '' : ' wide'}">${esc(name)}${it.extra && !g.extra ? ' <span class="tag sg">Extra</span>' : ''}${it.change ? `<span class="chg">${esc(cap(frac(it.change)))}</span>` : ''}</span></label></li>`;
     }).join('')}</ul>`;
   });
   // Lines like "Stovetop: …" or "Oven: …" are the book's alternate method, not a numbered step.
-  const isAlt = (s) => /^(Stovetop|Oven|Variation)\b/i.test(s);
-  const main = r.steps.filter((s) => !isAlt(s)), alts = r.steps.filter(isAlt);
-  html += `</div><div class="section-label">Method<span>${main.length} steps</span></div><ol class="steps">${main.map((s) => `<li>${esc(cap(frac(s)))}</li>`).join('')}</ol>`;
-  alts.forEach((s) => { html += `<div class="note"><strong>${esc(s.match(/^(\w+)/)[1])}</strong>${esc(cap(frac(s.replace(/^\w+\s*[:—–-]\s*/, ''))))}</div>`; });
+  const isAlt = (s) => /^(Stovetop|Oven)\s*:|^Variation\b/i.test(s);   // "Oven 450°F." is a real step; "Oven: …" is the alternate
+  const steps = mergedSteps(r);
+  const main = steps.filter((s) => s.extra || !isAlt(s.text)), alts = steps.filter((s) => !s.extra && isAlt(s.text));
+  const printedSteps = main.filter((s) => !s.extra).length;
+  html += `</div><div class="section-label">Method<span>${printedSteps} steps</span></div><ol class="steps">${main.map((s) => s.extra
+    ? `<li class="xstep"><span class="xtra">${esc(cap(frac(s.text)))}</span></li>`
+    : `<li>${esc(cap(frac(s.text)))}${s.append.length ? ` <span class="xtra">${esc(s.append.map((a) => cap(frac(a))).join(' '))}</span>` : ''}</li>`).join('')}</ol>`;
+  alts.forEach((s) => { html += `<div class="note"><strong>${esc(s.text.match(/^(\w+)/)[1])}</strong>${esc(cap(frac(s.text.replace(/^\w+\s*[:—–-]\s*/, ''))))}</div>`; });
   html += suggestionsCard(r);
   view.innerHTML = html;
   view.querySelectorAll('input[type=checkbox]').forEach((c) => c.addEventListener('change', () => {
-    const i = +c.dataset.i; c.checked ? done.add(i) : done.delete(i);
+    const i = c.dataset.i; c.checked ? done.add(i) : done.delete(i);
     try { sessionStorage.setItem(`dp.r.${id}`, JSON.stringify([...done])); } catch { /* ignore */ }
   }));
+  const applyExtras = (on) => {
+    view.classList.toggle('hide-extras', !on);
+    const b = $('#xtoggle'); if (b) { b.setAttribute('aria-checked', String(on)); b.textContent = on ? 'Show extras' : 'Original only'; }
+  };
+  applyExtras(LS.get('dp.extras', true));
+  $('#xtoggle')?.addEventListener('click', () => { const on = view.classList.contains('hide-extras'); LS.set('dp.extras', on); applyExtras(on); });
   window.scrollTo(0, 0);
 }
 
@@ -370,6 +388,31 @@ function recipeList(by, query, back) {
     html += `</div>`;
   });
   return html;
+}
+
+// Printed ingredient groups with the suggestions woven in: changed lines carry a note, extras are flagged.
+function mergedIngredients(r) {
+  const ops = r.suggestions?.ingredients || [];
+  const groups = r.ingredients.map((g) => ({ group: g.group, items: g.items.map((text) => ({ text })) }));
+  ops.filter((o) => o.change).forEach((o) => groups.forEach((g) => g.items.forEach((it) => { if (it.text === o.change) it.change = o.to; })));
+  ops.filter((o) => o.add).forEach((o) => {
+    const item = { text: o.add, extra: true };
+    const target = o.after && groups.find((g) => g.items.some((it) => it.text === o.after));
+    if (target) { target.items.splice(target.items.findIndex((it) => it.text === o.after) + 1, 0, item); return; }
+    ((o.group && groups.find((g) => g.group === o.group)) || groups[0]).items.push(item);
+  });
+  ops.filter((o) => o.addGroup).forEach((o) => groups.push({ group: o.addGroup, extra: true, items: o.items.map((text) => ({ text, extra: true })) }));
+  return groups;
+}
+// Printed steps with green additions: text appended inside a step, or an extra step after it.
+function mergedSteps(r) {
+  const ops = r.suggestions?.steps || [];
+  const out = ops.filter((o) => o.after === 0).map((o) => ({ text: o.text, extra: true }));
+  r.steps.forEach((text, i) => {
+    out.push({ text, append: ops.filter((o) => o.step === i + 1).map((o) => o.append) });
+    ops.filter((o) => o.after === i + 1).forEach((o) => out.push({ text: o.text, extra: true }));
+  });
+  return out;
 }
 
 // The recipe above stays exactly as printed; this card says what to add or change to meet the guidelines.
